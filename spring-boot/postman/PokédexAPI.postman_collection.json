@@ -12,14 +12,36 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/",
+					"raw": "http://localhost:8080/api/pokemons",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
-						""
+						"api",
+						"pokemons"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Buscar pokémon p/ id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/pokemons/979",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"pokemons",
+						"979"
 					]
 				}
 			},
@@ -31,19 +53,21 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/name?name=Gengar",
+					"raw": "http://localhost:8080/api/pokemons/name?name=Dialga",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
+						"api",
+						"pokemons",
 						"name"
 					],
 					"query": [
 						{
 							"key": "name",
-							"value": "Gengar"
+							"value": "Dialga"
 						}
 					]
 				}
@@ -56,13 +80,15 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/type?type=ghost",
+					"raw": "http://localhost:8080/api/pokemons/type?type=ghost",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
+						"api",
+						"pokemons",
 						"type"
 					],
 					"query": [
@@ -81,13 +107,15 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/ability?ability=levitate",
+					"raw": "http://localhost:8080/api/pokemons/ability?ability=levitate",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
+						"api",
+						"pokemons",
 						"ability"
 					],
 					"query": [
@@ -106,13 +134,15 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/move?move=shadow-ball",
+					"raw": "http://localhost:8080/api/pokemons/move?move=shadow-ball",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
+						"api",
+						"pokemons",
 						"move"
 					],
 					"query": [
@@ -126,44 +156,21 @@
 			"response": []
 		},
 		{
-			"name": "Buscar pokémon p/ geração",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8080/generation?generation=generation-iii",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"generation"
-					],
-					"query": [
-						{
-							"key": "generation",
-							"value": "generation-iii"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "Importando Todos os Pokémons",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/save-all",
+					"raw": "http://localhost:8080/api/pokemons/import",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
-						"save-all"
+						"api",
+						"pokemons",
+						"import"
 					]
 				}
 			},
