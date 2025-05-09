@@ -3,49 +3,73 @@ package br.com.marcoscunha.PokedexApi.controller;
 import br.com.marcoscunha.PokedexApi.model.Pokemon;
 import br.com.marcoscunha.PokedexApi.service.PokemonService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/api/pokemons")
 public class PokemonController {
+
     @Autowired
     private PokemonService service;
 
     @GetMapping
-    public List<Pokemon> getAll() {
-        return service.getAllPokemons();
+    public ResponseEntity<List<Pokemon>> getAll() {
+        List<Pokemon> pokemons = service.getAllPokemons();
+        return ResponseEntity.ok(pokemons);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Pokemon> getById(@PathVariable Long id) {
+        Optional<Pokemon> result = Optional.ofNullable(service.findById(id));
+        return result.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping("/name")
-    public List<Pokemon> getByName(@RequestParam String name) {
-        return service.findByName(name);
+    public ResponseEntity<List<Pokemon>> getByName(@RequestParam String name) {
+        List<Pokemon> result = service.findByName(name);
+        if (result.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/type")
-    public List<Pokemon> getByType(@RequestParam String type) {
-        return service.findByType(type);
+    public ResponseEntity<List<Pokemon>> getByType(@RequestParam String type) {
+        List<Pokemon> result = service.findByType(type);
+        if (result.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/ability")
-    public List<Pokemon> getByAbility(@RequestParam String ability) {
-        return service.findByAbility(ability);
+    public ResponseEntity<List<Pokemon>> getByAbility(@RequestParam String ability) {
+        List<Pokemon> result = service.findByAbility(ability);
+        if (result.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/move")
-    public List<Pokemon> getByMove(@RequestParam String move) {
-        return service.findByMove(move);
+    public ResponseEntity<List<Pokemon>> getByMove(@RequestParam String move) {
+        List<Pokemon> result = service.findByMove(move);
+        if (result.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/generation")
-    public List<Pokemon> getByGeneration(@RequestParam String generation) {
-        return service.findByGeneration(generation);
-    }
-
-    @PostMapping("/save-all")
-    public String importAll() {
+    @PostMapping("/import")
+    public ResponseEntity<String> importAll() {
         service.fetchAndSaveAllPokemons();
-        return "Todos os Pokémons foram importados com sucesso!!";
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body("Todos os Pokémons foram importados com sucesso!!");
     }
 }

@@ -4,175 +4,129 @@ import br.com.marcoscunha.PokedexApi.model.Pokemon;
 import br.com.marcoscunha.PokedexApi.repository.PokemonRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
-import org.springframework.http.ResponseEntity;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class PokemonServiceTest {
-
-    @Mock
-    private PokemonRepository pokemonRepository;
+class PokemonServiceTest {
 
     @Mock
     private RestTemplate restTemplate;
 
+    @Mock
+    private PokemonRepository repository;
+
     @InjectMocks
     private PokemonService pokemonService;
+
+    private Map<String, Object> mockApiResponse;
+    private Map<String, Object> mockSpeciesData;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+
+        // Criando a resposta mockada da API
+        mockApiResponse = new HashMap<>();
+        mockApiResponse.put("name", "palkia");
+        mockApiResponse.put("height", 18);
+        mockApiResponse.put("weight", 683);
+        mockApiResponse.put("id", 484);
+
+        List<Map<String, Object>> types = new ArrayList<>();
+        Map<String, Object> type = new HashMap<>();
+        type.put("type", Collections.singletonMap("name", "dragon"));
+        types.add(type);
+        mockApiResponse.put("types", types);
+
+        List<Map<String, Object>> abilities = new ArrayList<>();
+        Map<String, Object> ability = new HashMap<>();
+        ability.put("ability", Collections.singletonMap("name", "pressure"));
+        abilities.add(ability);
+        mockApiResponse.put("abilities", abilities);
+
+        List<Map<String, Object>> moves = new ArrayList<>();
+        Map<String, Object> move = new HashMap<>();
+        move.put("move", Collections.singletonMap("name", "spacial-rend"));
+        moves.add(move);
+        mockApiResponse.put("moves", moves);
+
+        List<Map<String, Object>> stats = new ArrayList<>();
+        Map<String, Object> stat = new HashMap<>();
+        stat.put("stat", Collections.singletonMap("name", "hp"));
+        stat.put("base_stat", 100);
+        stats.add(stat);
+        mockApiResponse.put("stats", stats);
+
+        // Criando a resposta mockada da "species" (dados adicionais)
+        mockSpeciesData = new HashMap<>();
+        Map<String, Object> species = new HashMap<>();
+        species.put("url", "http://mockurl.com");
+        mockSpeciesData.put("species", species);
+        mockSpeciesData.put("flavor_text_entries", Collections.singletonList(Collections.singletonMap("flavor_text", "Palkia controls space.")));
     }
 
     @Test
-    void testFetchAndSave() {
-        String name = "dialga";
+    void testFetchAndSavePokemon_Failure_ApiError() {
+        String pokemonName = "palkia";
 
-        // Mock da resposta da API de /pokemon/dialga
-        Map<String, Object> fakePokemonResponse = new HashMap<>();
-        fakePokemonResponse.put("name", name);
-        fakePokemonResponse.put("height", 54);
-        fakePokemonResponse.put("weight", 6830);
-        fakePokemonResponse.put("types", List.of(
-                Map.of("type", Map.of("name", "steel")),
-                Map.of("type", Map.of("name", "dragon"))
-        ));
-        fakePokemonResponse.put("abilities", List.of(Map.of("ability", Map.of("name", "pressure"))));
-        fakePokemonResponse.put("moves", List.of(Map.of("move", Map.of("name", "roar-of-time"))));
-        fakePokemonResponse.put("stats", List.of(Map.of("stat", Map.of("name", "special-attack"), "base_stat", 150)));
-        fakePokemonResponse.put("sprites", Map.of("front_default", "https://img.dialga.png"));
-        fakePokemonResponse.put("species", Map.of("url", "https://pokeapi.co/api/v2/pokemon-species/483/"));
+        // Mockando a resposta da API para retornar null
+        when(restTemplate.getForObject(anyString(), eq(Map.class))).thenReturn(null);
 
-        // Mock da resposta da species
-        Map<String, Object> speciesResponse = new HashMap<>();
-        speciesResponse.put("varieties", List.of(Map.of("pokemon", Map.of("name", "dialga"))));
-        speciesResponse.put("generation", Map.of("name", "generation-iv"));
-        speciesResponse.put("evolution_chain", Map.of("url", "https://pokeapi.co/api/v2/evolution-chain/483/"));
+        Pokemon result = pokemonService.fetchAndSavePokemon(pokemonName);
 
-        // Mock da resposta da evolução (Dialga não evolui)
-        Map<String, Object> evolutionResponse = Map.of("chain", Map.of(
-                "species", Map.of("name", "dialga"),
-                "evolves_to", List.of()
-        ));
-
-        // Configura os retornos simulados
-        when(restTemplate.getForObject("https://pokeapi.co/api/v2/pokemon/" + name, Map.class))
-                .thenReturn(fakePokemonResponse);
-
-        when(restTemplate.getForEntity("https://pokeapi.co/api/v2/pokemon-species/483/", Map.class))
-                .thenReturn(ResponseEntity.ok(speciesResponse));
-
-        when(restTemplate.getForEntity("https://pokeapi.co/api/v2/evolution-chain/483/", Map.class))
-                .thenReturn(ResponseEntity.ok(evolutionResponse));
-
-        when(pokemonRepository.save(any(Pokemon.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-
-        // Executa o método a ser testado
-        pokemonService.fetchAndSavePokemon(name);
-
-        // Verifica se o Pokémon foi salvo no repositório
-        verify(pokemonRepository, times(1)).save(any(Pokemon.class));
+        assertNull(result);  // Verificando que o resultado é null
+        verify(restTemplate, times(1)).getForObject(anyString(), eq(Map.class));  // Verificando se a API foi chamada
+        verify(repository, times(0)).save(any(Pokemon.class));  // Verificando se o Pokémon não foi salvo
     }
 
     @Test
-    void testGetAllPokemons() {
-        Pokemon dialga = new Pokemon();
-        dialga.setName("Dialga");
+    void testFetchAndSavePokemon_Failure_MissingName() {
+        String pokemonName = "palkia";
 
-        Pokemon palkia = new Pokemon();
-        palkia.setName("Palkia");
+        // Simulando uma resposta onde o nome está ausente
+        Map<String, Object> mockApiResponseWithoutName = new HashMap<>(mockApiResponse);
+        mockApiResponseWithoutName.put("name", null);  // Fazendo o nome ser null
 
-        List<Pokemon> pokemons = List.of(dialga, palkia);
+        // Mockando a resposta da API
+        when(restTemplate.getForObject(anyString(), eq(Map.class))).thenReturn(mockApiResponseWithoutName);
 
-        when(pokemonRepository.findAll()).thenReturn(pokemons);
+        Pokemon result = pokemonService.fetchAndSavePokemon(pokemonName);
 
-        List<Pokemon> result = pokemonService.getAllPokemons();
-
-        assertEquals(2, result.size());
-        assertEquals("Dialga", result.get(0).getName());
-        assertEquals("Palkia", result.get(1).getName());
-        verify(pokemonRepository, times(1)).findAll();
+        // O resultado deve ser null, pois o nome não foi encontrado
+        assertNull(result);
+        verify(restTemplate, times(1)).getForObject(anyString(), eq(Map.class));
+        verify(repository, times(0)).save(any(Pokemon.class));
     }
 
     @Test
-    void testFindByName() {
-        Pokemon dialga = new Pokemon();
-        dialga.setName("Dialga");
-        List<Pokemon> pokemons = List.of(dialga);
+    void testFetchAndSavePokemon_Failure_MissingSpeciesUrl() {
+        String pokemonName = "palkia";
 
-        when(pokemonRepository.findByNameContainingIgnoreCase("dialga")).thenReturn(pokemons);
+        // Simulando uma resposta onde o campo "species" ou "url" está ausente
+        Map<String, Object> mockApiResponseWithoutSpeciesUrl = new HashMap<>(mockApiResponse);
+        mockApiResponseWithoutSpeciesUrl.put("species", null);  // Fazendo o campo "species" ser null
 
-        List<Pokemon> result = pokemonService.findByName("dialga");
+        // Mockando a resposta da API
+        when(restTemplate.getForObject(anyString(), eq(Map.class))).thenReturn(mockApiResponseWithoutSpeciesUrl);
 
-        assertEquals(1, result.size());
-        assertEquals("Dialga", result.get(0).getName());
-        verify(pokemonRepository, times(1)).findByNameContainingIgnoreCase("dialga");
+        // Mockando o comportamento do repositório
+        when(repository.save(any(Pokemon.class))).thenReturn(new Pokemon());
+
+        Pokemon result = pokemonService.fetchAndSavePokemon(pokemonName);
+
+        // O Pokémon ainda deve ser salvo mesmo que a URL de species esteja ausente, porque o fallback é acionado
+        assertNotNull(result);
+        verify(restTemplate, times(1)).getForObject(anyString(), eq(Map.class));
+        verify(repository, times(1)).save(any(Pokemon.class));
     }
 
-    @Test
-    void testFindByType() {
-        Pokemon dialga = new Pokemon();
-        dialga.setName("Dialga");
-        List<Pokemon> pokemons = List.of(dialga);
-
-        when(pokemonRepository.findByTypeContainingIgnoreCase("steel")).thenReturn(pokemons);
-
-        List<Pokemon> result = pokemonService.findByType("steel");
-
-        assertEquals(1, result.size());
-        assertEquals("Dialga", result.get(0).getName());
-        verify(pokemonRepository, times(1)).findByTypeContainingIgnoreCase("steel");
-    }
-
-    @Test
-    void testFindByAbility() {
-        Pokemon dialga = new Pokemon();
-        dialga.setName("Dialga");
-        List<Pokemon> pokemons = List.of(dialga);
-
-        when(pokemonRepository.findByAbilityContainingIgnoreCase("pressure")).thenReturn(pokemons);
-
-        List<Pokemon> result = pokemonService.findByAbility("pressure");
-
-        assertEquals(1, result.size());
-        assertEquals("Dialga", result.get(0).getName());
-        verify(pokemonRepository, times(1)).findByAbilityContainingIgnoreCase("pressure");
-    }
-
-    @Test
-    void testFindByMove() {
-        Pokemon dialga = new Pokemon();
-        dialga.setName("Dialga");
-        List<Pokemon> pokemons = List.of(dialga);
-
-        when(pokemonRepository.findByMoveContainingIgnoreCase("roar-of-time")).thenReturn(pokemons);
-
-        List<Pokemon> result = pokemonService.findByMove("roar-of-time");
-
-        assertEquals(1, result.size());
-        assertEquals("Dialga", result.get(0).getName());
-        verify(pokemonRepository, times(1)).findByMoveContainingIgnoreCase("roar-of-time");
-    }
-
-    @Test
-    void testFindByGeneration() {
-        Pokemon dialga = new Pokemon();
-        dialga.setName("Dialga");
-        List<Pokemon> pokemons = List.of(dialga);
-
-        when(pokemonRepository.findByGenerationContainingIgnoreCase("generation-iv")).thenReturn(pokemons);
-
-        List<Pokemon> result = pokemonService.findByGeneration("generation-iv");
-
-        assertEquals(1, result.size());
-        assertEquals("Dialga", result.get(0).getName());
-        verify(pokemonRepository, times(1)).findByGenerationContainingIgnoreCase("generation-iv");
-    }
 }

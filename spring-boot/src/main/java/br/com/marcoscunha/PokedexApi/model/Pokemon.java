@@ -19,7 +19,7 @@ public class Pokemon {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(nullable = false, length = 255)
     private String name;
@@ -32,6 +32,9 @@ public class Pokemon {
 
     @Column(nullable = false)
     private int weight;
+
+    @Column(nullable = false)
+    private String sprite;
 
     @ElementCollection
     @CollectionTable(name = "pokemon_types", joinColumns = @JoinColumn(name = "pokemon_id"))
@@ -53,24 +56,8 @@ public class Pokemon {
     @Column(name = "stat")
     private Map<String, Integer> stats;
 
-
-    @ElementCollection
-    @CollectionTable(name = "pokemon_sprites", joinColumns = @JoinColumn(name = "pokemon_id"))
-    @Column(name = "img_url")
-    private List<String> imgUrl;
-
-    @ElementCollection
-    @CollectionTable(name = "pokemon_shapes", joinColumns = @JoinColumn(name = "pokemon_id"))
-    @Column(name = "shape")
-    private List<String> shape;
-
     @ElementCollection
     @CollectionTable(name = "pokemon_evolutions", joinColumns = @JoinColumn(name = "pokemon_id"))
     @Column(name = "evolution")
     private List<String> evolution;
-
-    @ElementCollection
-    @CollectionTable(name = "pokemon_generations", joinColumns = @JoinColumn(name = "pokemon_id"))
-    @Column(name = "generation")
-    private List<String> generation;
 }
