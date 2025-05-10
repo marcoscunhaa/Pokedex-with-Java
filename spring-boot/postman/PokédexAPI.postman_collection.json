@@ -27,6 +27,27 @@
 			"response": []
 		},
 		{
+			"name": "Mostrar todos os Pokémons p/ page",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/pokemons/paginated",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"pokemons",
+						"paginated"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Buscar pokémon p/ id",
 			"request": {
 				"method": "GET",

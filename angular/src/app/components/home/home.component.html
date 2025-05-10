@@ -1,5 +1,5 @@
 <body class="bg-gray-200 min-h-screen text-black flex flex-col items-center justify-center">
-  <div class="bg-white rounded-2xl shadow-lg p-8 w-[70%] h-[40%]">
+  <div class="bg-white rounded-2xl shadow-lg p-8 w-[70%] h-[80%]">
 
     <!-- Título alinhado com a barra -->
     <div class="mb-6 text-5xl lilita-one-regular text-purple-500">
@@ -7,27 +7,40 @@
     </div>
 
     <!-- Barra de pesquisa -->
-    <input type="text" placeholder="Buscar Pokémon..."
+    <input type="text" placeholder=" Search Pokémon..."
       class="w-full p-3 rounded-full text-black focus:outline-none focus:ring-2 focus:ring-purple-500" />
 
-   <!-- Grade de cards -->
-<div class="mt-6 grid grid-cols-3 gap-4">
-  @for (pokemon of pokemons; track pokemon.id) {
-    <div class="bg-white-800 rounded-xl shadow-md p-4 text-center relative">
-      <span class="absolute top-2 left-2 text-sm text-gray-500 font-semibold">#{{ pokemon.id }}</span>
-      <img [src]="pokemon.sprite" alt="{{ pokemon.name }}" class="mx-auto h-24 w-24 object-contain mb-2" />
-      <h2 class="text-lg font-semibold capitalize">{{ pokemon.name }}</h2>
-    </div>
-  }
-</div>
+    <!-- Grade de cards -->
+    <div class="mt-6 grid grid-cols-3 gap-4">
+      <!-- Exibir os pokémons com @for -->
+      @for (pokemon of pokemons; track pokemon.id) {
+        <div class="bg-white-800 rounded-xl shadow-md p-4 text-center relative">
+          <span class="absolute top-2 left-2 text-sm text-gray-500 font-semibold">#{{ pokemon.id }}</span>
+          <img [src]="pokemon.sprite" alt="{{ pokemon.name }}" class="mx-auto h-24 w-24 object-contain mb-2" />
 
-<!-- Botão Carregar Mais -->
-<div class="mt-6 text-center" *ngIf="!endReached">
-  <button (click)="loadPokemons()"
-    class="px-6 py-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition">
-    {{ loading ? 'Carregando...' : 'Carregar mais' }}
-  </button>
-</div>
+          <!-- Tipo do Pokémon -->
+          <div class="flex justify-center gap-2 mb-1">
+            @for (type of pokemon.type; track $index) {
+              <span [ngClass]="getTypeColor(type)"
+                class="font-medium text-sm capitalize px-3 py-1 rounded-full bg-white shadow">
+                {{ type }}
+              </span>
+            }
+          </div>
+          
+          <!-- Nome do Pokémon -->
+          <h2 class="text-lg lilita-one-regular font-semibold capitalize">{{ pokemon.name }}</h2>
+        </div>
+      }
+    </div>
+
+    <!-- Botão Carregar Mais -->
+    <div class="mt-6 text-center" *ngIf="!endReached">
+      <button (click)="loadPokemons()"
+        class="px-6 py-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition">
+        {{ loading ? 'Carregando...' : 'Carregar mais' }}
+      </button>
+    </div>
 
   </div>
 </body>

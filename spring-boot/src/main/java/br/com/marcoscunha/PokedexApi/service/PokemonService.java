@@ -4,6 +4,8 @@ import br.com.marcoscunha.PokedexApi.model.Pokemon;
 import br.com.marcoscunha.PokedexApi.repository.PokemonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -94,6 +96,10 @@ public class PokemonService {
 
     public List<Pokemon> getAllPokemons() {
         return repository.findAllByOrderByIdAsc();
+    }
+
+    public Page<Pokemon> getAllPaginated(Pageable pageable) {
+        return repository.findAll(pageable);
     }
 
     public Pokemon findById(Long id) {
