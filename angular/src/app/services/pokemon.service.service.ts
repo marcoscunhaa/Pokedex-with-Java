@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface Pokemon {
@@ -8,11 +8,11 @@ export interface Pokemon {
   description: string;
   height: number;
   weight: number;
-  types: string[];
+  type: string[];
   stats: { [key: string]: number };
-  abilitys: string[];
+  ability: string[];
   moves: string[];
-  evolution: string[];  
+  evolution: string[];
   sprite: string;
 }
 
@@ -25,11 +25,12 @@ export class PokemonService {
 
   constructor(private http: HttpClient) {}
 
-  getAllPokemons(): Observable<Pokemon[]> {
-    return this.http.get<Pokemon[]>(this.apiUrl);
-  }
+  // Função para pegar pokémons com paginação
+  getPokemons(page: number = 1, limit: number = 9): Observable<Pokemon[]> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString());
 
-  getPokemonById(id: number): Observable<Pokemon> {
-    return this.http.get<Pokemon>(`${this.apiUrl}/${id}`);
+    return this.http.get<Pokemon[]>(this.apiUrl, { params });
   }
 }
