@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.InputStream;
+import java.net.URL;
 import java.util.*;
 
 @Service
@@ -197,4 +199,41 @@ public class PokemonService {
         }
         return DESCRIPTION_NOT_FOUND;
     }
+
+    public void convertAllSpritesToBase64() {
+        List<Pokemon> pokemons = repository.findAll();
+
+        for (Pokemon pokemon : pokemons) {
+            try {
+                if (pokemon.getSpriteBase64() == null || pokemon.getSpriteBase64().isEmpty()) {
+                    String base64 = downloadImageAsBase64(pokemon.getSprite());
+                    pokemon.setSpriteBase64(base64);
+                    System.out.println("Convertido: " + pokemon.getName());
+
+                    // Delay entre as requisições para evitar erro 429
+                    Thread.sleep(1000);
+                } else {
+                    System.out.println("Já convertido: " + pokemon.getName());
+                }
+            } catch (Exception e) {
+                System.err.println("Erro ao converter sprite do Pokémon '" + pokemon.getName() + "': " + e.getMessage());
+            }
+        }
+
+        repository.saveAll(pokemons);
+    }
+
+
+
+    private String downloadImageAsBase64(String imageUrl) {
+        try (InputStream in = new URL(imageUrl).openStream()) {
+            byte[] imageBytes = in.readAllBytes();
+            return Base64.getEncoder().encodeToString(imageBytes);
+        } catch (Exception e) {
+            System.err.println("Erro ao baixar/converter imagem: " + e.getMessage());
+            return "";
+        }
+    }
+
+
 }

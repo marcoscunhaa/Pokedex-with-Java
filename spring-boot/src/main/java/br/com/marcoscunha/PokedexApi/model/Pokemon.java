@@ -36,6 +36,11 @@ public class Pokemon {
     @Column(nullable = false)
     private String sprite;
 
+    @Lob
+    @Column(name = "sprite_base64", columnDefinition = "CLOB")
+    private String spriteBase64;
+
+
     @ElementCollection
     @CollectionTable(name = "pokemon_types", joinColumns = @JoinColumn(name = "pokemon_id"))
     @Column(name = "type")

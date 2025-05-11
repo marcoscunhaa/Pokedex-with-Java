@@ -31,7 +31,7 @@ public class PokemonController {
         return ResponseEntity.ok(service.getAllPaginated(pageable));
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<Pokemon>> getAll() {
         List<Pokemon> pokemons = service.getAllPokemons();
         return ResponseEntity.ok(pokemons);
@@ -86,4 +86,11 @@ public class PokemonController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body("Todos os Pokémons foram importados com sucesso!!");
     }
+
+    @PostMapping("/convert-sprites")
+    public ResponseEntity<String> convertSpritesToBase64() {
+        service.convertAllSpritesToBase64();
+        return ResponseEntity.ok("Sprites convertidas para base64 com sucesso.");
+    }
+
 }
