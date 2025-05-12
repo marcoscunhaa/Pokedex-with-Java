@@ -17,37 +17,39 @@ export class HomeComponent implements OnInit {
   currentPage: number = 0;
   limit: number = 9;
   totalPages: number = 0;
-  loading: boolean = false; // <- adicionado
-  endReached: boolean = false; // <- adicionado
+  loading: boolean = false;
+  endReached: boolean = false;
 
-  constructor(private pokemonService: PokemonService) {}
+  constructor(private pokemonService: PokemonService) { }
 
   ngOnInit(): void {
+    this.loadAllPokemons();
+  }
+
+  loadAllPokemons(): void {
+    this.loading = true;
     this.pokemonService.getAllPokemons().subscribe(
       (pokemons: Pokemon[]) => {
         this.allPokemons = pokemons;
         this.totalPages = Math.ceil(this.allPokemons.length / this.limit);
         this.updateDisplayedPokemons();
+        this.loading = false;
       },
       (error) => {
         console.error('Erro ao carregar todos os pokémons:', error);
+        this.loading = false;
       }
     );
   }
 
-  // Atualiza os pokémons mostrados na tela com base na página atual
   updateDisplayedPokemons(): void {
     const startIndex = this.currentPage * this.limit;
     const endIndex = startIndex + this.limit;
     this.displayedPokemons = this.filteredPokemons.slice(0, endIndex);
 
-    // Verifica se todos os pokémons já foram carregados
-    if (endIndex >= this.filteredPokemons.length) {
-      this.endReached = true;
-    }
+    this.endReached = endIndex >= this.filteredPokemons.length;
   }
 
-  // Getter para aplicar filtro pelo termo de pesquisa
   get filteredPokemons(): Pokemon[] {
     const term = this.searchTerm.toLowerCase().trim();
     return this.allPokemons.filter(pokemon => {
@@ -56,7 +58,6 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  // Paginação manual — chamada ao clicar em "Carregar mais"
   loadPokemons(): void {
     if (this.loading || this.endReached) return;
 
@@ -65,10 +66,9 @@ export class HomeComponent implements OnInit {
       this.currentPage++;
       this.updateDisplayedPokemons();
       this.loading = false;
-    }, 500); // Simula carregamento
+    }, 500);
   }
 
-  // Atualiza exibição quando o termo de busca muda
   onSearchTermChange(): void {
     this.currentPage = 0;
     this.endReached = false;
@@ -76,7 +76,6 @@ export class HomeComponent implements OnInit {
     this.updateDisplayedPokemons();
   }
 
-  // Define cor do tipo
   getTypeColor(type: string): string {
     switch (type.toLowerCase()) {
       case 'fire': return 'text-orange-500';
@@ -102,4 +101,70 @@ export class HomeComponent implements OnInit {
   trackPokemon(index: number, pokemon: Pokemon): number {
     return pokemon.id;
   }
+
+  // ----------------------
+  // Busca Avançada
+  // ----------------------
+
+  showAdvancedSearch: boolean = false;
+
+  availableTypes: string[] = [
+    'normal', 'fire', 'water', 'grass', 'electric', 'ice',
+    'fighting', 'poison', 'ground', 'flying', 'psychic',
+    'bug', 'rock', 'ghost', 'dark', 'dragon', 'steel', 'fairy'
+  ];
+
+  selectedTypes: string[] = [];
+
+  advancedSearch = {
+    ability: '',
+    move: ''
+  };
+
+  toggleTypeSelection(type: string): void {
+    if (this.selectedTypes.includes(type)) {
+      this.selectedTypes = this.selectedTypes.filter(t => t !== type);
+    } else {
+      this.selectedTypes.push(type);
+    }
+  }
+
+  resetAdvancedSearch(): void {
+    this.selectedTypes = [];
+    this.advancedSearch.ability = '';
+    this.advancedSearch.move = '';
+    this.searchTerm = '';
+    this.showAdvancedSearch = false;
+    this.loadAllPokemons();
+  }
+
+  applyAdvancedSearch(): void {
+    this.loading = true;
+    this.currentPage = 0;
+    this.endReached = false;
+
+    const filters = {
+      name: this.searchTerm.trim() || undefined,
+      types: this.selectedTypes.length > 0 ? this.selectedTypes : undefined,
+      ability: this.advancedSearch.ability.trim() || undefined,
+      move: this.advancedSearch.move.trim() || undefined
+    };
+
+
+    this.pokemonService.searchAdvancedPokemons(filters).subscribe(
+      (pokemons: Pokemon[]) => {
+        this.allPokemons = pokemons;
+        this.totalPages = Math.ceil(pokemons.length / this.limit);
+        this.updateDisplayedPokemons();
+        this.loading = false;
+      },
+      (error) => {
+        console.error('Erro ao realizar busca avançada:', error);
+        this.loading = false;
+      }
+    );
+
+    this.showAdvancedSearch = false;
+  }
+
 }

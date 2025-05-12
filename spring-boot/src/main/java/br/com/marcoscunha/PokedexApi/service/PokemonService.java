@@ -13,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PokemonService {
@@ -61,10 +62,18 @@ public class PokemonService {
             return repository.save(pokemon);
         }
 
+        // Obtendo dados da URL de species
         Map<String, Object> speciesData = fetchFromApi(speciesUrl);
         if (speciesData == null) {
             handleSpeciesFallback(pokemon);
             return repository.save(pokemon);
+        }
+
+        // Adicionando a geração (essa informação é comumente disponível em "generation" dentro de speciesData)
+        Map<String, Object> generationInfo = (Map<String, Object>) speciesData.get("generation");
+        if (generationInfo != null) {
+            String generationName = (String) generationInfo.get("name"); // Exemplo: "generation-i"
+            pokemon.setGeneration(generationName);  // Adicionando geração ao Pokémon
         }
 
         pokemon.setEvolution(parseEvolution(speciesData, pokemonName));
@@ -72,6 +81,7 @@ public class PokemonService {
 
         return repository.save(pokemon);
     }
+
 
     public void fetchAndSaveAllPokemons() {
         String url = baseApiUrl + "pokemon?limit=100000&offset=0";
@@ -234,6 +244,51 @@ public class PokemonService {
             return "";
         }
     }
+
+    public List<Pokemon> advancedSearch(String name, List<String> types, String ability, String move, String generation) {
+        // Obtém todos os pokémons
+        List<Pokemon> result = getAllPokemons();
+
+        // Filtra por nome (se fornecido)
+        if (name != null && !name.isEmpty()) {
+            result = result.stream()
+                    .filter(p -> p.getName().toLowerCase().contains(name.toLowerCase()))
+                    .collect(Collectors.toList());
+        }
+
+        // Filtra por tipo (se fornecido)
+        if (types != null && !types.isEmpty()) {
+            result = result.stream()
+                    .filter(p -> types.stream().allMatch(t -> p.getType().contains(t.toLowerCase())))
+                    .collect(Collectors.toList());
+        }
+
+        // Filtra por habilidade (se fornecido)
+        if (ability != null && !ability.isEmpty()) {
+            result = result.stream()
+                    .filter(p -> p.getAbility().contains(ability.toLowerCase()))
+                    .collect(Collectors.toList());
+        }
+
+        // Filtra por movimento (se fornecido)
+        if (move != null && !move.isEmpty()) {
+            result = result.stream()
+                    .filter(p -> p.getMove().contains(move.toLowerCase()))
+                    .collect(Collectors.toList());
+        }
+
+        // Filtra por geração (se fornecido)
+        if (generation != null && !generation.isEmpty()) {
+            result = result.stream()
+                    .filter(p -> p.getGeneration() != null && p.getGeneration().toLowerCase().contains(generation.toLowerCase()))
+                    .collect(Collectors.toList());
+        }
+
+        return result;
+    }
+
+
+
 
 
 }

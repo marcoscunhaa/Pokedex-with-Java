@@ -65,4 +65,7 @@ public class Pokemon {
     @CollectionTable(name = "pokemon_evolutions", joinColumns = @JoinColumn(name = "pokemon_id"))
     @Column(name = "evolution")
     private List<String> evolution;
+
+    @Column(nullable = true, length = 50)
+    private String generation;
 }

@@ -22,14 +22,18 @@ public class PokemonController {
     @Autowired
     private PokemonService service;
 
-    @GetMapping("/paginated")
-    public ResponseEntity<Page<Pokemon>> getPaginatedPokemons(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "9") int size
+    @GetMapping("/search/advanced")
+    public ResponseEntity<List<Pokemon>> searchAdvanced(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) List<String> types,
+            @RequestParam(required = false) String ability,
+            @RequestParam(required = false) String move,
+            @RequestParam(required = false) String generation  // Adicionando parâmetro de geração
     ) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
-        return ResponseEntity.ok(service.getAllPaginated(pageable));
+        List<Pokemon> pokemons = service.advancedSearch(name, types, ability, move, generation);  // Passando a geração para o serviço
+        return ResponseEntity.ok(pokemons);
     }
+
 
     @GetMapping("/all")
     public ResponseEntity<List<Pokemon>> getAll() {

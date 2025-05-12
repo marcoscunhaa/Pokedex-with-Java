@@ -28,14 +28,14 @@ export class PokemonService {
 
   private apiUrl = 'http://localhost:8080/api/pokemons';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
-  // Novo método: pega todos os pokémons sem paginação
+  // Pega todos os pokémons sem paginação
   getAllPokemons(): Observable<Pokemon[]> {
     return this.http.get<Pokemon[]>(`${this.apiUrl}/all`);
   }
 
-  // Função para pegar pokémons com paginação
+  // Pega pokémons com paginação
   getPokemons(page: number, limit: number): Observable<PagedResponse> {
     const params = new HttpParams()
       .set('page', page.toString())
@@ -79,4 +79,33 @@ export class PokemonService {
     return this.http.get<Pokemon[]>(`${this.apiUrl}/move`, { params });
   }
 
+  // 🔍 Pesquisa avançada com múltiplos filtros (nome, múltiplos tipos, habilidade, movimento)
+  searchAdvancedPokemons(filters: {
+    name?: string;
+    types?: string[]; 
+    ability?: string;
+    move?: string;
+  }): Observable<Pokemon[]> {
+    let params = new HttpParams();
+
+    if (filters.name) {
+      params = params.set('name', filters.name);
+    }
+
+    if (filters.types && filters.types.length > 0) {
+      filters.types.forEach(type => {
+        params = params.append('types', type);
+      });
+    }
+
+    if (filters.ability) {
+      params = params.set('ability', filters.ability);
+    }
+
+    if (filters.move) {
+      params = params.set('move', filters.move);
+    }
+
+    return this.http.get<Pokemon[]>(`${this.apiUrl}/search/advanced`, { params });
+  }
 }
