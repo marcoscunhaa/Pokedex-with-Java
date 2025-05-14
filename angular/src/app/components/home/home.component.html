@@ -2,7 +2,7 @@
   <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 w-full max-w-6xl h-[90vh] flex flex-col">
 
     <!-- Título da Pokédex -->
-    <h1 class="text-4xl md:text-5xl lilita-one-regular text-center text-shadow text-purple-700 mb-6">
+    <h1 class="text-4xl md:text-5xl lilita-one-regular text-center text-shadow text-purple-600 mb-6">
       Pokedex
     </h1>
 
@@ -16,7 +16,7 @@
 
     <!-- Link para abrir a pesquisa avançada -->
     <div class="text-right lilita-one-regular mb-4">
-      <button (click)="showAdvancedSearch = true" class="text-purple-700 hover:underline text-sm">
+      <button (click)="showAdvancedSearch = true" class="text-purple-600 hover:underline text-sm">
         Advanced search?
       </button>
     </div>
@@ -69,13 +69,16 @@
           class="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700 transition">
           Load more
         </button>
-        <p *ngIf="loading" class="text-gray-500 mt-2">Loading...</p>
+
+        <!-- Componente loading -->
+        <app-loading *ngIf="loading" class="mt-4 flex justify-center"></app-loading>
+     
         <p *ngIf="endReached && !loading" class="montserrat text-gray-500 mt-2">All Pokémon have been loaded.</p>
       </div>
 
       <!-- Botão "Voltar ao Topo" -->
       <button *ngIf="showScrollTopButton" (click)="scrollToTop(scrollContainer)"
-        class="fixed bottom-6 right-6 bg-purple-600 text-white p-3 rounded-full shadow-lg hover:bg-purple-700 transition z-30">
+        class="animate-bounce fixed bottom-6 right-6 bg-purple-600 text-white p-3 rounded-full shadow-lg hover:bg-purple-700 transition z-30">
         <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
           fill="none" viewBox="0 0 10 14">
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

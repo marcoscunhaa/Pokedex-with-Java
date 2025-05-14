@@ -2,11 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Pokemon, PokemonService } from '../../services/pokemon.service.service';
 import { FormsModule } from '@angular/forms';
+import { LoadingComponent } from '../loading/loading.component';
+
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LoadingComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
