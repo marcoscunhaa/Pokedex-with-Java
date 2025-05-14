@@ -3,11 +3,6 @@ package br.com.marcoscunha.PokedexApi.controller;
 import br.com.marcoscunha.PokedexApi.model.Pokemon;
 import br.com.marcoscunha.PokedexApi.service.PokemonService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,9 +23,9 @@ public class PokemonController {
             @RequestParam(required = false) List<String> types,
             @RequestParam(required = false) String ability,
             @RequestParam(required = false) String move,
-            @RequestParam(required = false) String generation  // Adicionando parâmetro de geração
+            @RequestParam(required = false) String generation
     ) {
-        List<Pokemon> pokemons = service.advancedSearch(name, types, ability, move, generation);  // Passando a geração para o serviço
+        List<Pokemon> pokemons = service.advancedSearch(name, types, ability, move, generation);
         return ResponseEntity.ok(pokemons);
     }
 

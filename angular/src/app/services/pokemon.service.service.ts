@@ -14,6 +14,7 @@ export interface Pokemon {
   move: string[];
   evolution: string[];
   spriteBase64: string;
+  generation: string;
 }
 
 export interface PagedResponse {
@@ -30,12 +31,12 @@ export class PokemonService {
 
   constructor(private http: HttpClient) {}
 
-  // Pega todos os pokémons sem paginação
+  // 🔁 Pega todos os pokémons sem paginação
   getAllPokemons(): Observable<Pokemon[]> {
     return this.http.get<Pokemon[]>(`${this.apiUrl}/all`);
   }
 
-  // Pega pokémons com paginação
+  // 📄 Pega pokémons com paginação
   getPokemons(page: number, limit: number): Observable<PagedResponse> {
     const params = new HttpParams()
       .set('page', page.toString())
@@ -50,30 +51,30 @@ export class PokemonService {
     );
   }
 
-  // Buscar por ID
+  // 🔍 Buscar por ID
   getPokemonById(id: number): Observable<Pokemon> {
     return this.http.get<Pokemon>(`${this.apiUrl}/${id}`);
   }
 
-  // Buscar por nome
+  // 🔍 Buscar por nome
   getPokemonsByName(name: string): Observable<Pokemon[]> {
     const params = new HttpParams().set('name', name);
     return this.http.get<Pokemon[]>(`${this.apiUrl}/name`, { params });
   }
 
-  // Buscar por tipo
+  // 🔍 Buscar por tipo
   getPokemonsByType(type: string): Observable<Pokemon[]> {
     const params = new HttpParams().set('type', type);
     return this.http.get<Pokemon[]>(`${this.apiUrl}/type`, { params });
   }
 
-  // Buscar por habilidade
+  // 🔍 Buscar por habilidade
   getPokemonsByAbility(ability: string): Observable<Pokemon[]> {
     const params = new HttpParams().set('ability', ability);
     return this.http.get<Pokemon[]>(`${this.apiUrl}/ability`, { params });
   }
 
-  // Buscar por movimento
+  // 🔍 Buscar por movimento
   getPokemonsByMove(move: string): Observable<Pokemon[]> {
     const params = new HttpParams().set('move', move);
     return this.http.get<Pokemon[]>(`${this.apiUrl}/move`, { params });
@@ -82,9 +83,10 @@ export class PokemonService {
   // 🔍 Pesquisa avançada com múltiplos filtros (nome, múltiplos tipos, habilidade, movimento)
   searchAdvancedPokemons(filters: {
     name?: string;
-    types?: string[]; 
+    types?: string[];
     ability?: string;
     move?: string;
+    generation?: string;
   }): Observable<Pokemon[]> {
     let params = new HttpParams();
 
@@ -104,6 +106,10 @@ export class PokemonService {
 
     if (filters.move) {
       params = params.set('move', filters.move);
+    }
+
+    if (filters.generation) {
+      params = params.set('generation', filters.generation);
     }
 
     return this.http.get<Pokemon[]>(`${this.apiUrl}/search/advanced`, { params });

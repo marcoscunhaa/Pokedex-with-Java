@@ -1,72 +1,87 @@
 <body class="bg-gray-200 min-h-screen text-black flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 w-full max-w-6xl h-[90vh] overflow-y-auto ">
+  <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 w-full max-w-6xl h-[90vh] flex flex-col">
 
     <!-- Título da Pokédex -->
-    <h1 class="text-4xl md:text-5xl lilita-one-regular text-center text-purple-500 mb-6">
+    <h1 class="text-4xl md:text-5xl lilita-one-regular text-center text-shadow text-purple-700 mb-6">
       Pokedex
     </h1>
 
     <!-- Barra de pesquisa -->
     <div class="mb-4">
-      <input type="text" [(ngModel)]="searchTerm" (input)="onSearchTermChange()" placeholder="Search pokémons..."
-        class="w-full p-3 rounded-full border border-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-purple-500"
+      <input type="text" [(ngModel)]="searchTerm" (input)="onSearchTermChange()"
+        placeholder="Search by pokedex number or pokemon..."
+        class="montserrat w-full p-3 rounded-full border border-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-purple-500"
         aria-label="Search Pokémon" />
     </div>
 
     <!-- Link para abrir a pesquisa avançada -->
     <div class="text-right lilita-one-regular mb-4">
-      <button (click)="showAdvancedSearch = true" class="text-purple-500 hover:underline text-sm">
+      <button (click)="showAdvancedSearch = true" class="text-purple-700 hover:underline text-sm">
         Advanced search?
       </button>
     </div>
 
-    <!-- Grid de pokémons -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-      <div *ngFor="let pokemon of displayedPokemons; trackBy: trackPokemon">
-        <div class="bg-white rounded-xl shadow-md p-4 text-center relative hover:shadow-xl transition duration-200">
+    <!-- Parte com rolagem (somente cards) -->
+    <div class="flex-1 overflow-y-auto pr-1 relative" #scrollContainer (scroll)="onScroll(scrollContainer)">
 
-          <!-- ID do Pokémon -->
-          <span class="absolute top-2 left-2 text-sm text-gray-500 font-semibold">
-            #{{ pokemon.id }}
-          </span>
+      <!-- Grid de pokémons -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <div *ngFor="let pokemon of displayedPokemons; trackBy: trackPokemon">
+          <div class="bg-white rounded-xl shadow-md p-4 text-center relative hover:shadow-xl transition duration-200">
 
-          <!-- Sprite + Altura/Peso -->
-          <div class="flex justify-center items-center gap-4 mb-2">
-            <!-- Imagem -->
-            <img [src]="'data:image/png;base64,' + pokemon.spriteBase64" alt="{{ pokemon.name }}"
-              class="h-24 w-24 object-contain" />
-
-            <!-- Altura e Peso -->
-            <div class="text-left text-sm text-gray-700">
-              <p><strong>Height:</strong> {{ pokemon.height }} m</p>
-              <p><strong>Weight:</strong> {{ pokemon.weight }} kg</p>
-            </div>
-          </div>
-
-          <!-- Tipos -->
-          <div class="flex flex-wrap justify-center gap-2 mb-2">
-            <span *ngFor="let type of pokemon.type" [ngClass]="getTypeColor(type)"
-              class="font-medium text-sm capitalize px-3 py-1 rounded-full bg-white shadow">
-              {{ type }}
+            <!-- ID do Pokémon -->
+            <span class="absolute top-2 left-2 text-sm text-gray-500 font-semibold">
+              #{{ pokemon.id }}
             </span>
-          </div>
 
-          <!-- Nome -->
-          <h2 class="text-lg lilita-one-regular font-semibold capitalize">
-            {{ pokemon.name }}
-          </h2>
+            <!-- Sprite + Altura/Peso -->
+            <div class="flex justify-center items-center gap-4 mb-2">
+              <!-- Imagem -->
+              <img [src]="'data:image/png;base64,' + pokemon.spriteBase64" alt="{{ pokemon.name }}"
+                class="h-24 w-24 object-contain" />
+
+              <!-- Altura e Peso -->
+              <div class="text-left montserrat text-sm text-gray-700">
+                <p><strong>Height:</strong> {{ pokemon.height }} m</p>
+                <p><strong>Weight:</strong> {{ pokemon.weight }} kg</p>
+              </div>
+            </div>
+
+            <!-- Tipos -->
+            <div class="flex flex-wrap montserrat justify-center gap-2 mb-2">
+              <span *ngFor="let type of pokemon.type" [ngClass]="getTypeColor(type)"
+                class="font-medium text-sm capitalize px-3 py-1 rounded-full bg-white shadow">
+                {{ type }}
+              </span>
+            </div>
+
+            <!-- Nome -->
+            <h2 class="text-lg lilita-one-regular font-semibold capitalize">
+              {{ pokemon.name }}
+            </h2>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Botão "Carregar mais" -->
-    <div class="mt-6 text-center">
-      <button *ngIf="!loading && !endReached" (click)="loadPokemons()"
-        class="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700 transition">
-        Load more
+      <!-- Botão "Carregar mais" -->
+      <div class="mt-6 text-center">
+        <button *ngIf="!loading && !endReached" (click)="loadPokemons()"
+          class="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700 transition">
+          Load more
+        </button>
+        <p *ngIf="loading" class="text-gray-500 mt-2">Loading...</p>
+        <p *ngIf="endReached && !loading" class="montserrat text-gray-500 mt-2">All Pokémon have been loaded.</p>
+      </div>
+
+      <!-- Botão "Voltar ao Topo" -->
+      <button *ngIf="showScrollTopButton" (click)="scrollToTop(scrollContainer)"
+        class="fixed bottom-6 right-6 bg-purple-600 text-white p-3 rounded-full shadow-lg hover:bg-purple-700 transition z-30">
+        <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+          fill="none" viewBox="0 0 10 14">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M5 13V1m0 0L1 5m4-4 4 4" />
+        </svg>
       </button>
-      <p *ngIf="loading" class="text-gray-500 mt-2">Loading...</p>
-      <p *ngIf="endReached && !loading" class="text-gray-500 mt-2">All Pokémon have been loaded.</p>
     </div>
 
     <!-- Modal de Pesquisa Avançada -->
@@ -76,16 +91,17 @@
         <button (click)="showAdvancedSearch = false"
           class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl">&times;</button>
 
-        <h2 class="text-3xl lilita-one-regular text-center text-purple-500 mb-4">Advanced search</h2>
+        <h2 class="text-3xl lilita-one-regular text-center text-purple-700 mb-4">Advanced search</h2>
 
         <!-- Tipos -->
         <div class="mb-4">
-          <label class="block font-semibold lilita-one-regular text-purple-500 mb-1">Type:</label>
+          <label class="block font-semibold lilita-one-regular text-purple-700 mb-1">Type:</label>
           <div class="flex flex-wrap gap-2">
-            <button class="rounded-full bg-white shadow" *ngFor="let type of availableTypes" (click)="toggleTypeSelection(type)" [ngClass]="[
-        selectedTypes.includes(type) 
-          ? 'bg-purple-500 text-white' 
-          : getTypeColor(type),
+            <button class="shadow montserrat" *ngFor="let type of availableTypes" (click)="toggleTypeSelection(type)"
+              [ngClass]="[
+        selectedTypes.includes(type)
+          ? 'bg-purple-700 text-white'
+          : 'bg-white ' + getTypeColor(type),
         'px-3 py-1 rounded-full text-sm capitalize hover:opacity-80 transition'
       ]">
               {{ type }}
@@ -93,28 +109,37 @@
           </div>
         </div>
 
-
         <!-- Habilidade -->
         <div class="mb-4">
-          <label class="block font-semibold lilita-one-regular text-purple-500 mb-1">Ability:</label>
+          <label class="block font-semibold lilita-one-regular text-purple-700 mb-1">Ability:</label>
           <input [(ngModel)]="advancedSearch.ability" placeholder="Ex: telepathy"
-            class="w-full p-2 border rounded-md border-gray-300" />
+            class="w-full p-2 montserrat border rounded-md border-gray-300" />
         </div>
 
         <!-- Movimento -->
         <div class="mb-4">
-          <label class="block font-semibold lilita-one-regular text-purple-500 mb-1">Move:</label>
+          <label class="block font-semibold lilita-one-regular text-purple-700 mb-1">Move:</label>
           <input [(ngModel)]="advancedSearch.move" placeholder="Ex: draco-meteor"
-            class="w-full p-2 border rounded-md border-gray-300" />
+            class="w-full p-2 montserrat border rounded-md border-gray-300" />
+        </div>
+
+        <!-- Região -->
+        <div class="mb-4">
+          <label class="block font-semibold lilita-one-regular text-purple-700 mb-1">Region:</label>
+          <select [(ngModel)]="advancedSearch.region" class="montserrat w-full p-2 border rounded-md border-gray-300">
+            <option value="">All regions</option>
+            <option *ngFor="let region of regions" [value]="region">{{ region }}</option>
+          </select>
         </div>
 
         <!-- Botões -->
         <div class="flex justify-between">
-          <button (click)="resetAdvancedSearch()" class="bg-gray-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition">
+          <button (click)="resetAdvancedSearch()"
+            class="bg-gray-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition">
             Clear
           </button>
           <button (click)="applyAdvancedSearch()"
-            class="bg-purple-500 text-white px-4 py-2 rounded-full hover:bg-purple-600 transition">
+            class="bg-purple-500 text-white px-4 py-2 rounded-full hover:bg-purple-700 transition">
             Apply
           </button>
         </div>

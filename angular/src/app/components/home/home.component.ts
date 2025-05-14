@@ -20,7 +20,9 @@ export class HomeComponent implements OnInit {
   loading: boolean = false;
   endReached: boolean = false;
 
-  constructor(private pokemonService: PokemonService) { }
+  showScrollTopButton = false;
+
+  constructor(private pokemonService: PokemonService) {}
 
   ngOnInit(): void {
     this.loadAllPokemons();
@@ -46,21 +48,18 @@ export class HomeComponent implements OnInit {
     const startIndex = this.currentPage * this.limit;
     const endIndex = startIndex + this.limit;
     this.displayedPokemons = this.filteredPokemons.slice(0, endIndex);
-
     this.endReached = endIndex >= this.filteredPokemons.length;
   }
 
   get filteredPokemons(): Pokemon[] {
     const term = this.searchTerm.toLowerCase().trim();
-    return this.allPokemons.filter(pokemon => {
-      const matchesNameOrId = pokemon.name.toLowerCase().includes(term) || pokemon.id.toString().includes(term);
-      return matchesNameOrId;
-    });
+    return this.allPokemons.filter(pokemon =>
+      pokemon.name.toLowerCase().includes(term) || pokemon.id.toString().includes(term)
+    );
   }
 
   loadPokemons(): void {
     if (this.loading || this.endReached) return;
-
     this.loading = true;
     setTimeout(() => {
       this.currentPage++;
@@ -102,10 +101,6 @@ export class HomeComponent implements OnInit {
     return pokemon.id;
   }
 
-  // ----------------------
-  // Busca Avançada
-  // ----------------------
-
   showAdvancedSearch: boolean = false;
 
   availableTypes: string[] = [
@@ -114,11 +109,29 @@ export class HomeComponent implements OnInit {
     'bug', 'rock', 'ghost', 'dark', 'dragon', 'steel', 'fairy'
   ];
 
+  regions: string[] = [
+    'Kanto', 'Johto', 'Hoenn', 'Sinnoh', 'Unova',
+    'Kalos', 'Alola', 'Galar', 'Paldea'
+  ];
+
+  regionToGenerationMap: { [key: string]: string } = {
+    'Kanto': 'generation-i',
+    'Johto': 'generation-ii',
+    'Hoenn': 'generation-iii',
+    'Sinnoh': 'generation-iv',
+    'Unova': 'generation-v',
+    'Kalos': 'generation-vi',
+    'Alola': 'generation-vii',
+    'Galar': 'generation-viii',
+    'Paldea': 'generation-ix'
+  };
+
   selectedTypes: string[] = [];
 
   advancedSearch = {
     ability: '',
-    move: ''
+    move: '',
+    region: ''
   };
 
   toggleTypeSelection(type: string): void {
@@ -131,8 +144,11 @@ export class HomeComponent implements OnInit {
 
   resetAdvancedSearch(): void {
     this.selectedTypes = [];
-    this.advancedSearch.ability = '';
-    this.advancedSearch.move = '';
+    this.advancedSearch = {
+      ability: '',
+      move: '',
+      region: ''
+    };
     this.searchTerm = '';
     this.showAdvancedSearch = false;
     this.loadAllPokemons();
@@ -147,9 +163,11 @@ export class HomeComponent implements OnInit {
       name: this.searchTerm.trim() || undefined,
       types: this.selectedTypes.length > 0 ? this.selectedTypes : undefined,
       ability: this.advancedSearch.ability.trim() || undefined,
-      move: this.advancedSearch.move.trim() || undefined
+      move: this.advancedSearch.move.trim() || undefined,
+      generation: this.advancedSearch.region
+        ? this.regionToGenerationMap[this.advancedSearch.region]
+        : undefined
     };
-
 
     this.pokemonService.searchAdvancedPokemons(filters).subscribe(
       (pokemons: Pokemon[]) => {
@@ -167,4 +185,11 @@ export class HomeComponent implements OnInit {
     this.showAdvancedSearch = false;
   }
 
+  onScroll(container: HTMLElement) {
+    this.showScrollTopButton = container.scrollTop > 300;
+  }
+
+  scrollToTop(container: HTMLElement) {
+    container.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 }
