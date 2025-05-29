@@ -3,15 +3,18 @@ import { CommonModule } from '@angular/common';
 import { Pokemon, PokemonService } from '../../services/pokemon.service.service';
 import { FormsModule } from '@angular/forms';
 import { LoadingComponent } from '../loading/loading.component';
+import { RouterModule } from '@angular/router';
+import { PokemonDetailsComponent } from '../pokemon-details/pokemon-details.component';
 
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, LoadingComponent],
+  imports: [CommonModule, FormsModule, LoadingComponent, RouterModule, PokemonDetailsComponent],
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css']
+  styleUrls: ['./home.component.css'],
 })
+
 export class HomeComponent implements OnInit {
   allPokemons: Pokemon[] = [];
   displayedPokemons: Pokemon[] = [];
@@ -21,15 +24,19 @@ export class HomeComponent implements OnInit {
   totalPages: number = 0;
   loading: boolean = false;
   endReached: boolean = false;
-
+  showAdvancedSearch: boolean = false;
+  selectedTypes: string[] = [];
+  selectedPokemonId: number | null = null;
   showScrollTopButton = false;
+  router: any;
 
-  constructor(private pokemonService: PokemonService) {}
+  constructor(private pokemonService: PokemonService) { }
 
   ngOnInit(): void {
     this.loadAllPokemons();
   }
 
+  //Carrega todos os pokémons
   loadAllPokemons(): void {
     this.loading = true;
     this.pokemonService.getAllPokemons().subscribe(
@@ -46,6 +53,7 @@ export class HomeComponent implements OnInit {
     );
   }
 
+  //Atualiza a paginação de pokémons com incremento de +9
   updateDisplayedPokemons(): void {
     const startIndex = this.currentPage * this.limit;
     const endIndex = startIndex + this.limit;
@@ -53,6 +61,7 @@ export class HomeComponent implements OnInit {
     this.endReached = endIndex >= this.filteredPokemons.length;
   }
 
+  //Busca o pokémon pelo nome ou ID
   get filteredPokemons(): Pokemon[] {
     const term = this.searchTerm.toLowerCase().trim();
     return this.allPokemons.filter(pokemon =>
@@ -77,6 +86,7 @@ export class HomeComponent implements OnInit {
     this.updateDisplayedPokemons();
   }
 
+  //Interface de cores para a tipagem de pokémons
   getTypeColor(type: string): string {
     switch (type.toLowerCase()) {
       case 'fire': return 'text-orange-500';
@@ -99,23 +109,25 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  //Função para selecionar o pokémon
   trackPokemon(index: number, pokemon: Pokemon): number {
     return pokemon.id;
   }
 
-  showAdvancedSearch: boolean = false;
-
+  //Array com os tipos de pokémons
   availableTypes: string[] = [
     'normal', 'fire', 'water', 'grass', 'electric', 'ice',
     'fighting', 'poison', 'ground', 'flying', 'psychic',
     'bug', 'rock', 'ghost', 'dark', 'dragon', 'steel', 'fairy'
   ];
 
+  //Array com as regiões de cada geração de pokémons
   regions: string[] = [
     'Kanto', 'Johto', 'Hoenn', 'Sinnoh', 'Unova',
     'Kalos', 'Alola', 'Galar', 'Paldea'
   ];
 
+  //Interface para condicionar cada região
   regionToGenerationMap: { [key: string]: string } = {
     'Kanto': 'generation-i',
     'Johto': 'generation-ii',
@@ -127,8 +139,6 @@ export class HomeComponent implements OnInit {
     'Galar': 'generation-viii',
     'Paldea': 'generation-ix'
   };
-
-  selectedTypes: string[] = [];
 
   advancedSearch = {
     ability: '',
@@ -144,6 +154,7 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  //Limpa as condições que o usuários criou para filtrar
   resetAdvancedSearch(): void {
     this.selectedTypes = [];
     this.advancedSearch = {
@@ -156,6 +167,7 @@ export class HomeComponent implements OnInit {
     this.loadAllPokemons();
   }
 
+  //Aplica as condições que o usuário criou para filtrar
   applyAdvancedSearch(): void {
     this.loading = true;
     this.currentPage = 0;
@@ -188,10 +200,15 @@ export class HomeComponent implements OnInit {
   }
 
   onScroll(container: HTMLElement) {
-    this.showScrollTopButton = container.scrollTop > 300;
+    this.showScrollTopButton = container.scrollTop > 200;
   }
 
-  scrollToTop(container: HTMLElement) {
-    container.scrollTo({ top: 0, behavior: 'smooth' });
+  selectPokemon(id: number): void {
+    this.selectedPokemonId = id;
   }
+
+  closePokemonDetails() {
+    this.selectedPokemonId = null;
+  }
+
 }

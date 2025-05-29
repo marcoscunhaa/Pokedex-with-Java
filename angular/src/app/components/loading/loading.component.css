@@ -1,14 +1,13 @@
 .overlay {
   position: fixed;
-  inset: 0; /* shorthand para top/right/bottom/left: 0 */
-  background-color: rgba(0, 0, 0, 0.7); /* preto com 50% opacidade */
-  z-index: 50; /* acima da maioria dos elementos */
+  inset: 0; 
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 50;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* From Uiverse.io by Juanes200122 */ 
 #svg-global {
   zoom: 1.2;
   overflow: visible;

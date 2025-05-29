@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 
+// Interfaces para tipar os dados recebidos da API
 export interface Pokemon {
   id: number;
   name: string;
@@ -22,79 +23,95 @@ export interface PagedResponse {
   totalPages: number;
 }
 
+export interface PokemonFilter {
+  name?: string;
+  types?: string[];
+  ability?: string;
+  move?: string;
+  generation?: string;
+}
+
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PokemonService {
-
-  private apiUrl = 'http://localhost:8080/api/pokemons';
+  private readonly apiUrl = 'http://localhost:8080/api/pokemons';
 
   constructor(private http: HttpClient) {}
 
-  // 🔁 Pega todos os pokémons sem paginação
+  /**
+   * Retorna todos os Pokémon sem paginação.
+   */
   getAllPokemons(): Observable<Pokemon[]> {
     return this.http.get<Pokemon[]>(`${this.apiUrl}/all`);
   }
 
-  // 📄 Pega pokémons com paginação
+  /**
+   * Retorna Pokémon com paginação (page e limit).
+   */
   getPokemons(page: number, limit: number): Observable<PagedResponse> {
     const params = new HttpParams()
       .set('page', page.toString())
       .set('limit', limit.toString());
 
-    return this.http.get<any>(`${this.apiUrl}`, { params }).pipe(
-      map(response => {
-        const pokemons: Pokemon[] = response.content ?? [];
-        const totalPages: number = response.totalPages ?? 0;
-        return { pokemons, totalPages } as PagedResponse;
-      })
+    return this.http.get<any>(this.apiUrl, { params }).pipe(
+      map(response => ({
+        pokemons: response.content ?? [],
+        totalPages: response.totalPages ?? 0,
+      }))
     );
   }
 
-  // 🔍 Buscar por ID
+  /**
+   * Retorna um Pokémon pelo seu ID.
+   */
   getPokemonById(id: number): Observable<Pokemon> {
     return this.http.get<Pokemon>(`${this.apiUrl}/${id}`);
   }
 
-  // 🔍 Buscar por nome
+  /**
+   * Retorna Pokémon com base no nome.
+   */
   getPokemonsByName(name: string): Observable<Pokemon[]> {
     const params = new HttpParams().set('name', name);
     return this.http.get<Pokemon[]>(`${this.apiUrl}/name`, { params });
   }
 
-  // 🔍 Buscar por tipo
+  /**
+   * Retorna Pokémon com base no tipo.
+   */
   getPokemonsByType(type: string): Observable<Pokemon[]> {
     const params = new HttpParams().set('type', type);
     return this.http.get<Pokemon[]>(`${this.apiUrl}/type`, { params });
   }
 
-  // 🔍 Buscar por habilidade
+  /**
+   * Retorna Pokémon com base na habilidade.
+   */
   getPokemonsByAbility(ability: string): Observable<Pokemon[]> {
     const params = new HttpParams().set('ability', ability);
     return this.http.get<Pokemon[]>(`${this.apiUrl}/ability`, { params });
   }
 
-  // 🔍 Buscar por movimento
+  /**
+   * Retorna Pokémon com base no movimento.
+   */
   getPokemonsByMove(move: string): Observable<Pokemon[]> {
     const params = new HttpParams().set('move', move);
     return this.http.get<Pokemon[]>(`${this.apiUrl}/move`, { params });
   }
 
-  // 🔍 Pesquisa avançada com múltiplos filtros (nome, múltiplos tipos, habilidade, movimento)
-  searchAdvancedPokemons(filters: {
-    name?: string;
-    types?: string[];
-    ability?: string;
-    move?: string;
-    generation?: string;
-  }): Observable<Pokemon[]> {
+  /**
+   * Pesquisa avançada com múltiplos filtros (nome, tipos, habilidade, movimento, geração).
+   */
+  searchAdvancedPokemons(filters: PokemonFilter): Observable<Pokemon[]> {
     let params = new HttpParams();
 
     if (filters.name) {
       params = params.set('name', filters.name);
     }
 
-    if (filters.types && filters.types.length > 0) {
+    if (filters.types?.length) {
       filters.types.forEach(type => {
         params = params.append('types', type);
       });

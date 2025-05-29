@@ -1,5 +1,5 @@
 <body class="bg-gray-200 min-h-screen text-black flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 w-full max-w-6xl h-[90vh] flex flex-col">
+  <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 w-full max-w-6xl h-[90vh] flex flex-col relative">
 
     <!-- Título da Pokédex -->
     <h1 class="text-4xl md:text-5xl lilita-one-regular text-center text-shadow text-purple-600 mb-6">
@@ -21,13 +21,20 @@
       </button>
     </div>
 
-    <!-- Parte com rolagem (somente cards) -->
-    <div class="flex-1 overflow-y-auto pr-1 relative" #scrollContainer (scroll)="onScroll(scrollContainer)">
+    <!-- Card com os detalhes sobre o pokémon selecionado -->
+    <div class="flex-1 overflow-hidden relative transition-all duration-300 flex"
+      [ngClass]="selectedPokemonId ? 'flex-row gap-6' : 'flex-col gap-0'" #scrollContainer
+      (scroll)="onScroll(scrollContainer)" style="height: calc(90vh - 140px);">
 
-      <!-- Grid de pokémons -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        <div *ngFor="let pokemon of displayedPokemons; trackBy: trackPokemon">
-          <div class="bg-white rounded-xl shadow-md p-4 text-center relative hover:shadow-xl transition duration-200">
+      <!-- Grid de Pokémons -->
+      <div class="flex-1 overflow-y-auto pr-1">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          @for (pokemon of displayedPokemons; track pokemon.id) {
+          
+            <!-- Card do Pokémon -->
+          <div
+            class="pokemon-card bg-white rounded-xl shadow-md p-4 text-center relative hover:shadow-xl transition duration-200 cursor-pointer"
+            (click)="selectPokemon(pokemon.id)">
 
             <!-- ID do Pokémon -->
             <span class="absolute top-2 left-2 text-sm text-gray-500 font-semibold">
@@ -36,11 +43,8 @@
 
             <!-- Sprite + Altura/Peso -->
             <div class="flex justify-center items-center gap-4 mb-2">
-              <!-- Imagem -->
               <img [src]="'data:image/png;base64,' + pokemon.spriteBase64" alt="{{ pokemon.name }}"
                 class="h-24 w-24 object-contain" />
-
-              <!-- Altura e Peso -->
               <div class="text-left montserrat text-sm text-gray-700">
                 <p><strong>Height:</strong> {{ pokemon.height }} m</p>
                 <p><strong>Weight:</strong> {{ pokemon.weight }} kg</p>
@@ -49,10 +53,14 @@
 
             <!-- Tipos -->
             <div class="flex flex-wrap montserrat justify-center gap-2 mb-2">
-              <span *ngFor="let type of pokemon.type" [ngClass]="getTypeColor(type)"
+              @for (type of pokemon.type; track type) {
+              <span [ngClass]="getTypeColor(type)"
                 class="font-medium text-sm capitalize px-3 py-1 rounded-full bg-white shadow">
                 {{ type }}
               </span>
+              } @empty {
+              <span>No types</span>
+              }
             </div>
 
             <!-- Nome -->
@@ -60,39 +68,51 @@
               {{ pokemon.name }}
             </h2>
           </div>
+          } @empty {
+          <p class="montserrat text-center text-gray-500">No Pokémon found.</p>
+          }
         </div>
-      </div>
 
-      <!-- Botão "Carregar mais" -->
-      <div class="mt-6 text-center">
-        <button *ngIf="!loading && !endReached" (click)="loadPokemons()"
-          class="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700 transition">
-          Load more
-        </button>
+        <!-- Botão "Carregar mais" -->
+        @if (!loading && !endReached) {
+        <div class="flex justify-center mt-4">
+          <button (click)="loadPokemons()"
+            class="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700 transition">
+            Load more
+          </button>
+        </div>
+        }
 
         <!-- Componente loading -->
-        <app-loading *ngIf="loading" class="mt-4 flex justify-center"></app-loading>
-     
-        <p *ngIf="endReached && !loading" class="montserrat text-gray-500 mt-2">All Pokémon have been loaded.</p>
+        @if (loading) {
+        <app-loading class="mt-4 flex justify-center"></app-loading>
+        }
+
+        <!-- Mensagem quando todos os Pokémon foram carregados -->
+        @if (endReached && !loading) {
+        <p class="montserrat text-center text-gray-500 mt-2">All Pokémon have been loaded.</p>
+        }
       </div>
 
-      <!-- Botão "Voltar ao Topo" -->
-      <button *ngIf="showScrollTopButton" (click)="scrollToTop(scrollContainer)"
-        class="animate-bounce fixed bottom-6 right-6 bg-purple-600 text-white p-3 rounded-full shadow-lg hover:bg-purple-700 transition z-30">
-        <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-          fill="none" viewBox="0 0 10 14">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M5 13V1m0 0L1 5m4-4 4 4" />
-        </svg>
-      </button>
+      <!-- Card detalhes -->
+      <div *ngIf="selectedPokemonId"
+        class="w-full md:w-[380px] bg-white rounded-2xl shadow-lg p-6 overflow-y-auto sticky top-0 self-start"
+        style="max-height: calc(90vh - 250px);">
+        <button (click)="selectedPokemonId = null"
+          class="absolute top-2 right-2 text-gray-500 hover:text-red-700 text-3xl"
+          aria-label="Close details">&times;</button>
+
+        <app-pokemon-details [pokemonId]="selectedPokemonId"></app-pokemon-details>
+      </div>
     </div>
 
     <!-- Modal de Pesquisa Avançada -->
-    <div *ngIf="showAdvancedSearch" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    @if (showAdvancedSearch) {
+    <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
       <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-md relative">
 
         <button (click)="showAdvancedSearch = false"
-          class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl">&times;</button>
+          class="absolute top-2 right-2 text-gray-500 hover:text-red-700 text-3xl">&times;</button>
 
         <h2 class="text-3xl lilita-one-regular text-center text-purple-700 mb-4">Advanced search</h2>
 
@@ -100,15 +120,18 @@
         <div class="mb-4">
           <label class="block font-semibold lilita-one-regular text-purple-700 mb-1">Type:</label>
           <div class="flex flex-wrap gap-2">
-            <button class="shadow montserrat" *ngFor="let type of availableTypes" (click)="toggleTypeSelection(type)"
-              [ngClass]="[
-        selectedTypes.includes(type)
-          ? 'bg-purple-700 text-white'
-          : 'bg-white ' + getTypeColor(type),
-        'px-3 py-1 rounded-full text-sm capitalize hover:opacity-80 transition'
-      ]">
+            @for (type of availableTypes; track type) {
+            <button class="shadow montserrat" (click)="toggleTypeSelection(type)" [ngClass]="[
+                    selectedTypes.includes(type)
+                      ? 'bg-purple-700 text-white'
+                      : 'bg-white ' + getTypeColor(type),
+                    'px-3 py-1 rounded-full text-sm capitalize hover:opacity-80 transition'
+                  ]">
               {{ type }}
             </button>
+            } @empty {
+            <span>No types available.</span>
+            }
           </div>
         </div>
 
@@ -131,7 +154,11 @@
           <label class="block font-semibold lilita-one-regular text-purple-700 mb-1">Region:</label>
           <select [(ngModel)]="advancedSearch.region" class="montserrat w-full p-2 border rounded-md border-gray-300">
             <option value="">All regions</option>
-            <option *ngFor="let region of regions" [value]="region">{{ region }}</option>
+            @for (region of regions; track region) {
+            <option [value]="region">{{ region }}</option>
+            } @empty {
+            <option disabled>No regions available.</option>
+            }
           </select>
         </div>
 
@@ -148,5 +175,10 @@
         </div>
       </div>
     </div>
+    }
+
+
+    
   </div>
+
 </body>
